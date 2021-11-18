@@ -23,7 +23,7 @@ const start = async () => {
     console.error(e.response ? e.response.data : e);
     return;
   }
-  console.log(response.data);
+  // console.log(response.data);
   key = response.data;
 
   getMicro();
@@ -40,7 +40,7 @@ const getMicro = async () => {
     console.error(e.response ? e.response.data : e);
     return;
   }
-  console.log(response_register.data);
+  // console.log(response_register.data);
 
   if (response_register.data) {
     loopMicro(response_register.data);
@@ -50,34 +50,37 @@ const getMicro = async () => {
 const loopMicro = async (micro) => {
   await Promise.all(
     micro.map(async (e) => {
-      let response_register;
-      try {
-        response_register = await axios.get(e.host + "/getKey", {
-          headers: { "x-auth-token": key.token },
-        });
-      } catch (e) {
-        console.error(e.response ? e.response.data : e);
-        return;
-      }
-      console.log(response_register.data);
-      let response_unlock;
-      try {
-        response_unlock = await axios.post(
-          "http://10.44.17.33:1338/key/unlock",
-          { code: e.code, key: response_register.data.encrypted_public_key },
-          {
-            headers: { "x-auth-token": key.token },
-          }
-        );
-      } catch (e) {
-        console.error(e.response ? e.response.data : e);
-        return;
-      }
-      console.log(response_unlock.data);
+      validateMicro(e);
     })
   );
+  // loopMicro(micro);
+};
 
-  loopMicro(micro);
+const validateMicro = async ({ host, code }) => {
+  let response_register;
+  try {
+    response_register = await axios.get(host + "/getKey", {
+      headers: { "x-auth-token": key.token },
+    });
+  } catch (e) {
+    console.error(e.response ? e.response.data : e);
+    return;
+  }
+  // console.log(response_register.data);
+  let response_unlock;
+  try {
+    response_unlock = await axios.post(
+      "http://10.44.17.33:1338/key/unlock",
+      { code, key: response_register.data.encrypted_public_key },
+      {
+        headers: { "x-auth-token": key.token },
+      }
+    );
+  } catch (e) {
+    console.error(e.response ? e.response.data : e);
+    return;
+  }
+  // console.log(response_unlock.data);
 };
 
 app.get("/ping", async (req, res) => {
@@ -87,8 +90,8 @@ app.get("/ping", async (req, res) => {
 // Création d'un endpoint en GET
 app.get("/getkey", async (req, res) => {
   // Récuperer les headers
-  let headers = req.headers;
-  if (!headers["x-auth-token"]) {
+  const token = req.headers["x-auth-token"];
+  if (!token) {
     res.status(400).send("Un des paramètres obligatoires est manquant");
   }
 
@@ -97,7 +100,7 @@ app.get("/getkey", async (req, res) => {
   try {
     response_token = await axios.post(
       "http://10.44.17.33:1338/token/validate",
-      { token: headers["x-auth-token"] },
+      { token },
       {
         headers: { "x-auth-token": key.token },
       }
@@ -110,22 +113,18 @@ app.get("/getkey", async (req, res) => {
     }
     res.status(502).send("serveur indisponible");
   }
-  console.log(response_token.data);
+  // console.log(response_token.data);
   if (!response_token.data.valid) {
     res.status(403).send("Authentification invalide");
   }
-  let sec = await encrypt(key.secret_key, key.public_key);
-  res.status(200).json((encrypted_public_key = sec));
+  let sec = encrypt(key.secret_key, key.public_key);
+  res.status(200).json({ encrypted_public_key: sec });
 });
 
 // Création d'un endpoint en POST
-app.post("/url_du_endpoint_en_post", async (req, res) => {
-  // Récuération du body
-  let body = req.body;
-  let headers = req.headers;
-  console.log(body);
-  console.log(headers);
-  res.json();
+app.post("/newservice", async (req, res) => {
+  // console.log(req.body);
+  validateMicro(req.body);
 });
 
 // Lancement du service
