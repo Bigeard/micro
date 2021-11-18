@@ -16,7 +16,7 @@ const start = async () => {
   try {
     response = await axios.post(
       "http://10.44.17.33:1338/register",
-      { code: "robin.bigeard", host: "http://10.44.19.70:3000" },
+      { code: "robin.bigeard", host: "http://10.44.17.250:3000" },
       { auth: { username: "ynovset", password: "tHuds4752_525@" } }
     );
   } catch (e) {
@@ -25,7 +25,7 @@ const start = async () => {
   }
   // console.log(response.data);
   key = response.data;
-
+  console.log("Hello");
   getMicro();
 };
 
@@ -40,7 +40,7 @@ const getMicro = async () => {
     console.error(e.response ? e.response.data : e);
     return;
   }
-  // console.log(response_register.data);
+  console.log(response_register.data);
 
   if (response_register.data) {
     loopMicro(response_register.data);
@@ -92,7 +92,7 @@ app.get("/getkey", async (req, res) => {
   // Récuperer les headers
   const token = req.headers["x-auth-token"];
   if (!token) {
-    res.status(400).send("Un des paramètres obligatoires est manquant");
+    return res.status(400).send("Salut BG <3 !!!!!!!!!!!!!!!!!!");
   }
 
   // Envoie d'une requete check token
@@ -107,18 +107,18 @@ app.get("/getkey", async (req, res) => {
     );
   } catch (e) {
     if (e.response.status === 500) {
-      res.status(500).send("Erreur inconnue (serveur)");
+      return res.status(500).send("Salut BG <3 !!!!!!!!!!!!!!!!!!");
     } else if (e.response.status === 403) {
-      res.status(403).send("Authentification invalide");
+      return res.status(403).send("Salut BG <3 !!!!!!!!!!!!!!!!!!");
     }
-    res.status(502).send("serveur indisponible");
+    return res.status(502).send("Salut BG <3 !!!!!!!!!!!!!!!!!!");
   }
   // console.log(response_token.data);
   if (!response_token.data.valid) {
-    res.status(403).send("Authentification invalide");
+    return res.status(403).send("Salut BG <3 !!!!!!!!!!!!!!!!!!");
   }
   let sec = encrypt(key.secret_key, key.public_key);
-  res.status(200).json({ encrypted_public_key: sec });
+  return res.status(200).json({ encrypted_public_key: sec });
 });
 
 // Création d'un endpoint en POST

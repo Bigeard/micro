@@ -1,3 +1,15 @@
+# Lunch the project :
+```
+npm i
+node app.js
+```
+
+# Troll draw the heart ! <3
+
+```
+./bash.bash
+```
+
 # Client microservice
 
 Ce projet est un template pour l'implémentation d'un service au sein d'une architecture microservice.
